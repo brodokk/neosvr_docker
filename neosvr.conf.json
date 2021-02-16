@@ -1,0 +1,17 @@
+{
+ "tickRate": 60.0,
+ "usernameOverride": "Headless docker",
+ "loginCredential": null,
+ "loginPassword": null,
+ "startWorld": {
+   "sessionName": "Testing",
+   "description": "Headless with docker",
+   "maxUsers": 16,
+   "accessLevel": "Anyone",
+   "tags": "hosted",
+   "mobileFriendly": false,
+   "loadWorldURL": null,
+   "loadWorldPresetName": "GridSpace",
+   "adminUsernames": []
+  }
+}
