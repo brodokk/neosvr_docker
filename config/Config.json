@@ -1,17 +1,42 @@
 {
- "tickRate": 60.0,
- "usernameOverride": "Headless docker",
- "loginCredential": null,
- "loginPassword": null,
- "startWorld": {
-   "sessionName": "Testing",
-   "description": "Headless with docker",
-   "maxUsers": 16,
-   "accessLevel": "Anyone",
-   "tags": "hosted",
-   "mobileFriendly": false,
-   "loadWorldURL": null,
-   "loadWorldPresetName": "GridSpace",
-   "adminUsernames": []
-  }
+  "comment": null,
+  "tickRate": 60.0,
+  "maxConcurrentAssetTransfers": 4,
+  "usernameOverride": "Headless docker",
+  "loginCredential": null,
+  "loginPassword": null,
+  "startWorlds": [
+    {
+      "isEnabled": true,
+      "sessionName": "Testing",
+      "customSessionId": null,
+      "description": "Headless with docker",
+      "maxUsers": 16,
+      "accessLevel": "Anyone",
+      "hideFromPublicListing": null,
+      "tags": [
+        "hosted"
+      ],
+      "mobileFriendly": false,
+      "saveAsOwner": "LocalMachine",
+      "loadWorldPresetName": "GridSpace",
+      "forcePort": null,
+      "keepOriginalRoles": false,
+      "defaultUserRoles": null,
+      "autoInviteUsernames": null,
+      "autoInviteMessage": null,
+      "autoRecover": true,
+      "idleRestartInterval": -1.0,
+      "forcedRestartInterval": -1.0,
+      "saveOnExit": true,
+      "autosaveInterval": 240.0,
+      "awayKickMinutes": -1.0,
+      "autoSleep": true
+    }
+  ],
+  "dataFolder": null,
+  "cacheFolder": null,
+  "allowedUrlHosts": null,
+  "autoSpawnItems": null,
+  "metamovieRoles": null
 }
