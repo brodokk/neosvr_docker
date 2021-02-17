@@ -12,6 +12,6 @@ services:
       BETA_KEY: ***
     volumes:
       - ./steam:/steam
-      - ./neosvr.conf.json:/steam/740250/Config/Config.json
+      - ./config:/steam/740250/Config
     stdin_open: true
     tty: true
