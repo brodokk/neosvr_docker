@@ -6,6 +6,9 @@ only work with NeosVR since I use this mainly for testing the headless client.
 Since I don't use this Dockerfile in production I don't recommend you to use
 it as is for other thing than testing.
 
+See NeosVR official [wiki page](https://wiki.neos.com/Headless_Client/Server)
+for more information about the headless client.
+
 # Usage
 
 You need to be logged as an user to be able to download NeosVR headless client.
