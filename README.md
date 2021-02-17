@@ -1,7 +1,9 @@
 # NeosVR docker
 
-Based on a work from https://github.com/shiipou/steamcmd but simplified for
-only work with NeosVR since I use this mainly for testing the headless client.
+Based on a work from
+[shiipou GitHub repository](https://github.com/shiipou/steamcmd) but simplified
+for only work with NeosVR since I use this mainly for testing the headless
+client.
 
 Since I don't use this Dockerfile in production I don't recommend you to use
 it as is for other thing than testing.
