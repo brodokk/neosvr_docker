@@ -13,6 +13,6 @@ services:
     volumes:
       - ./steam:/steam
       - ./logs:/logs
-      - ./config:/steam/740250/Config
+      - ./config:/steam/740250/Config:ro
     stdin_open: true
     tty: true
