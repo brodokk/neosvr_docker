@@ -31,6 +31,7 @@ case "$arguments" in
     echo "Cleaning old stuff..."
     find /steam/${LAUNCH_APP}/Data/Assets -atime +7 -delete
     find /steam/${LAUNCH_APP}/Data/Cache -atime +7 -delete
+    find /Logs -atime +30 -delete
     echo "Run NeosVR headless client..."
-    cd /steam/${LAUNCH_APP}/ && mono Neos.exe;;
+    cd /steam/${LAUNCH_APP}/ && mono Neos.exe -l /logs;;
 esac
