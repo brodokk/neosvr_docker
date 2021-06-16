@@ -47,3 +47,8 @@ command if you want to control the server.
 ```
 docker attach <container_name>
 ```
+
+# Notes
+
+If you have frequent GC crashes you need to set `vm.max_map_count=262144` in
+`/etc/sysctl.conf`.
