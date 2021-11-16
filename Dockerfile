@@ -10,15 +10,15 @@ ENV GID ${GROUP:-1000}
 ARG INSTALL_APPS
 ENV INSTALL_APPS ${INSTALL_APPS:-"740250"}
 # Id of the app who will be launched
-ARG LAUNCH_APP
-ENV LAUNCH_APP ${LAUNCH_APP:-"740250"}
+ARG STEAM_LAUNCH_APP
+ENV STEAM_LAUNCH_APP ${STEAM_LAUNCH_APP:-"740250"}
 
 # Steam credentials
-ENV LOGIN ${LOGIN:-"anonymous"}
-ENV PASSWORD ${PASSWORD:-""}
+ENV STEAM_USER ${STEAM_USER:-"anonymous"}
+ENV STEAM_PWD ${STEAM_PWD:-""}
 # Beta keys
-ENV BETA_NAME ${BETA_NAME:-"headless-client"}
-ENV BETA_KEY ${BETA_KEY:-""}
+ENV STEAM_BETA_NAME ${STEAM_BETA_NAME:-"headless-client"}
+ENV STEAM_BETA_KEY ${STEAM_BETA_KEY:-""}
 
 RUN echo steam steam/question select "I AGREE" | debconf-set-selections && \
     echo steam steam/license note '' | debconf-set-selections
