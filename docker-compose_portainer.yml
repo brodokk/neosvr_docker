@@ -1,0 +1,42 @@
+version: "3.7"
+
+services:
+
+  reverse-proxy:
+    image: traefik:v2.4
+    command:
+      - --providers.docker
+      - --entrypoints.web.address=:80
+      - --entrypoints.websecure.address=:443
+      - --providers.docker
+      - --certificatesresolvers.leresolver.acme.httpchallenge=true
+      - --certificatesresolvers.leresolver.acme.email=<EMAIL>
+      - --certificatesresolvers.leresolver.acme.httpchallenge.entrypoint=web
+      - --certificatesresolvers.leresolver.acme.storage=/letsencrypt/acme.json"
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./letsencrypt:/letsencrypt
+    labels:
+      - "traefik.http.routers.http-catchall.rule=hostregexp(`{host:.+}`)"
+      - "traefik.http.routers.http-catchall.entrypoints=web"
+      - "traefik.http.routers.http-catchall.middlewares=redirect-to-https"
+      - "traefik.http.middlewares.redirect-to-https.redirectscheme.scheme=https"
+
+  portainer:
+    image: portainer/portainer-ce:2.0.0
+    command: -H unix:///var/run/docker.sock --admin-password '<PASSWORD>'
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - /etc/localtime:/etc/localtime:ro
+      - ./dataportainer:/data
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.portainer_frontend.rule=Host(`<DOMAIN>`)"
+      - "traefik.http.routers.portainer_frontend.entrypoints=websecure"
+      - "traefik.http.routers.portainer_frontend.service=portainer_frontend"
+      - "traefik.http.routers.portainer_frontend.tls=true"
+      - "traefik.http.routers.portainer_frontend.tls.certresolver=leresolver"
+      - "traefik.http.services.portainer_frontend.loadbalancer.server.port=9000"

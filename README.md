@@ -19,6 +19,8 @@ For that set `LOGIN` and `PASSWORD` environment variables.
 You also need the beta key who can be set via the `BETA-KEY` environment
 variable.
 
+## Simple usage
+
 Before using it you need to build it and then use it, for example,  directly
 via docker with the following commands. Keep in mind this took some time, so be
 patient.
@@ -38,6 +40,8 @@ spaces) but not needed actually for the NeosVR headless client. And the second
 environement variable is for define the app to be launched at start. Both have
 as default value the actual NeosVR headless client id `740250`.
 
+## Docker Compose
+
 You can also launch it via docker-compose with the example file
 `docker-compose.yml` provided.
 
@@ -47,6 +51,28 @@ command if you want to control the server.
 ```
 docker attach <container_name>
 ```
+
+## Docker Compose with portainer
+
+You can also use this with this portainer. Launch the stack in
+`docker-compose_portainer.yml` and then import the normal
+`docker-compose.yml` via the web interface.
+
+```
+docker-compose -f docker-compose_portainer.yml up
+```
+
+You will need to replace the three following string in the compose file for
+make it work: `<EMAIL>`, `<PASSWORD>`, `<DOMAIN>`.
+
+For generate password you will need to use the following command (replace `mycutepassword` by your password):
+
+```
+docker run --rm httpd:2.4-alpine htpasswd -nbB admin 'mycutepassword' | cut -d ":" -f 2
+```
+
+And the add `$` in front of all the `$` otherwise you will have a parsing error.
+More information here: https://gist.github.com/deviantony/62c009b41bde5e078b1a7de9f11f5e55
 
 # Notes
 

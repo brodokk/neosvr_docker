@@ -1,9 +1,10 @@
 version: "3.7"
 
 services:
+
   neosvr:
     build: .
-    environment: 
+    environment:
       LAUNCH_APP: 740250
       INSTALL_APPS: 740250
       LOGIN: user
