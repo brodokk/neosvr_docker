@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 if [ -n "${INSTALL_APPS}" ]; then
   OLD_IFS=$IFS
