@@ -7,20 +7,26 @@ if [ -n "${INSTALL_APPS}" ]; then
     steamcmd_binary="steamcmd"
     password_bypass=""
     beta_cmd=""
-    if [ -n "${BETA_NAME}" ]; then
-      beta_cmd=" -beta ${BETA_NAME}"
-      if [ -n "${BETA_KEY}" ]; then
-        beta_cmd="${beta_cmd} -betapassword ${BETA_KEY}"
+    if [ -n "${STEAM_BETA_NAME}" ]; then
+      beta_cmd=" -beta ${STEAM_BETA_NAME}"
+      if [ -n "${STEAM_BETA_KEY}" ]; then
+        beta_cmd="${beta_cmd} -betapassword ${STEAM_BETA_KEY}"
       fi
     fi
-    if [ -n "${PASSWORD}" ]; then
-      password_bypass="echo '${PASSWORD}' | "
+    if [ -n "${STEAM_PWD}" ]; then
+      password_bypass="echo '${STEAM_PWD}' | "
     fi
     echo "Check if ${app} is up to date"
-    /bin/sh -c "${steamcmd_binary} +login ${LOGIN} ${PASSWORD} +force_install_dir /steam/${app} +app_update ${app}${beta_cmd} validate +quit"
+    /bin/sh -c "${steamcmd_binary} +login ${STEAM_USER} ${STEAM_PWD} +force_install_dir /steam/${app} +app_update ${app}${beta_cmd} validate +quit"
   done
   IFS=$OLD_IFS
 fi
+
+echo "setting up neos config from env"
+
+CONFIG_PATH='/steam/740250/Config'
+
+cat $CONFIG_PATH | jq --arg u "${NEOSVR_USER}" '.loginCredential = $u' | jq --arg p "${NEOSVR_PWD}" '.loginPassword = $p' | sponge $CONFIG_PATH
 
 arguments=$@
 case "$arguments" in
