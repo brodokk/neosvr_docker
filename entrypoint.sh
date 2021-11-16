@@ -22,9 +22,15 @@ if [ -n "${INSTALL_APPS}" ]; then
   IFS=$OLD_IFS
 fi
 
-echo "setting up neos config from env"
-
+ORIGIN_CONFIG_PATH="config.json_base"
 CONFIG_PATH='/steam/740250/Config/Config.json'
+
+if [[ -f "$ORIGIN_CONFIG_PATH" ]]; then
+  echo "Neos config file not found, setting it up..."
+  mv $ORIGIN_CONFIG_PATH $CONFIG_PATH
+fi
+
+echo "Setting up neos config from env"
 
 cat $CONFIG_PATH | jq --arg u "${NEOSVR_USER}" '.loginCredential = $u' | jq --arg p "${NEOSVR_PWD}" '.loginPassword = $p' | sponge $CONFIG_PATH
 

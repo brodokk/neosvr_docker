@@ -41,6 +41,8 @@ ENV LANGUAGE 'en_US:en'
 
 RUN ln -s /usr/games/steamcmd /usr/bin/steamcmd
 
+COPY config.json_base /config.json_base
+
 ADD entrypoint.sh /entrypoint.sh
 
 RUN chmod +x /entrypoint.sh
