@@ -10,7 +10,7 @@ services:
       STEAM_USER: ${STEAM_USER}
       STEAM_PWD: ${STEAM_PWD}
       STEAM_BETA_NAME: headless-client
-      STEAM_BETA_KEY: ${STEAM_BETAKEY}
+      STEAM_BETA_KEY: ${STEAM_BETA_KEY}
       NEOSVR_USER: ${NEOSVR_USER}
       NEOSVR_PWD: ${NEOSVR_PWD}
     volumes:

@@ -24,7 +24,7 @@ fi
 
 echo "setting up neos config from env"
 
-CONFIG_PATH='/steam/740250/Config'
+CONFIG_PATH='/steam/740250/Config/Config.json'
 
 cat $CONFIG_PATH | jq --arg u "${NEOSVR_USER}" '.loginCredential = $u' | jq --arg p "${NEOSVR_PWD}" '.loginPassword = $p' | sponge $CONFIG_PATH
 
