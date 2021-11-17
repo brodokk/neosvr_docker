@@ -22,7 +22,7 @@ if [ -n "${INSTALL_APPS}" ]; then
   IFS=$OLD_IFS
 fi
 
-ORIGIN_CONFIG_PATH="config.json_base"
+ORIGIN_CONFIG_PATH="/config.json_base"
 CONFIG_PATH='/steam/740250/Config/Config.json'
 
 if [[ -f "$ORIGIN_CONFIG_PATH" ]]; then
