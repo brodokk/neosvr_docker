@@ -101,8 +101,11 @@ pexpect
 
 You need to set the id of the container line `71`.
 
-And last but not least dont forgot to set the key in the `accesscode.txt` file.
+And last but not least dont forgot to set the key in the `accesscode.txt` file
+in the `scripts` folder, create the file if needed.
 Can be anything, but keep in mind security.
+
+For launching the script you *MUST* be in the script folder.
 
 # Notes
 
