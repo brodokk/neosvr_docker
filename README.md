@@ -74,6 +74,36 @@ docker run --rm httpd:2.4-alpine htpasswd -nbB admin 'mycutepassword' | cut -d "
 And the add `$` in front of all the `$` otherwise you will have a parsing error.
 More information here: https://gist.github.com/deviantony/62c009b41bde5e078b1a7de9f11f5e55
 
+# scripts
+
+## Neos Headless RCON Websocket
+
+Enable remote access to Neos headless server console via secure websocket within Neos userspace.
+
+Thanks to GrayBoltWolf for his script, you can check the original one here: https://gitlab.com/-/snippets/2249980.
+
+NeosVR facet/panel can be found in his public folder: neosrec:///U-GrayBoltWolf/R-6ab7ea3e-b7a9-4ab7-9490-955094c34021
+
+In the futur i will make this script with a better integration with the current docker stack. Just a little todolist formyself:
+
+- Automatic detection of the headless
+- Automatic setup of the certificate
+- Still support non-docker installation
+
+### Installation
+
+The following packages are needed:
+
+```
+websockets
+pexpect
+```
+
+You need to set the id of the container line `71`.
+
+And last but not least dont forgot to set the key in the `accesscode.txt` file.
+Can be anything, but keep in mind security.
+
 # Notes
 
 If you have frequent GC crashes you need to set `vm.max_map_count=262144` in
