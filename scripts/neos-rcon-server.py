@@ -1,5 +1,6 @@
 #!/bin/python3
 
+import signal
 import asyncio
 import websockets
 import ssl
@@ -70,7 +71,15 @@ async def consumer_handler(websocket, child, access_code):
 async def handler(websocket, path):
     child = pexpect.spawnu("docker attach e8364dae7321")
     child.sendline()
-    i = child.expect_exact([">\x1b[37m\x1b[6n"])
+    try:
+        i = child.expect_exact([">\x1b[37m\x1b[6n"])
+    except Exception as e:
+        if 'No such container' in str(e):
+            print('Container not found')
+        else:
+            print(e)
+        sys.exit(1)
+
     with open("accesscode.txt") as f:
         access_code = f.read()
         access_code = access_code.split('\n', 1)[0]
@@ -88,7 +97,14 @@ ssl_cert = "cert.pem"
 ssl_key = "privkey.pem"
 ssl_context.load_cert_chain(ssl_cert, keyfile=ssl_key)
 
-start_server = websockets.serve(handler, '0.0.0.0', 8765, ssl=ssl_context)
+async def rcon_server(stop):
+    async with websockets.serve(handler, "0.0.0.0", 8765, ssl=ssl_context):
+        await stop
 
-asyncio.get_event_loop().run_until_complete(start_server)
-asyncio.get_event_loop().run_forever()
+loop = asyncio.get_event_loop()
+
+# The stop condition is set when receiving SIGTERM.
+stop = loop.create_future()
+loop.add_signal_handler(signal.SIGTERM, stop.set_result, None)
+
+loop.run_until_complete(rcon_server(stop))
