@@ -8,6 +8,7 @@ import datetime
 import sys
 import pexpect
 import re
+import argparse
 
 def cleanWorldReply(focused_world):
     ansi_escape = re.compile(r'\x1B(?:[@-Z\\-_]|\[[0-?]*[ -/]*[@-~])')
@@ -92,14 +93,27 @@ async def handler(websocket, path):
     for task in pending:
         task.cancel()
 
-ssl_context = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
-ssl_cert = "cert.pem"
-ssl_key = "privkey.pem"
-ssl_context.load_cert_chain(ssl_cert, keyfile=ssl_key)
+async def rcon_server(stop, args):
+    if args.nosecure:
+        ssl_context = None
+    else:
+        ssl_context = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
+        ssl_cert = "cert.pem"
+        ssl_key = "privkey.pem"
+        ssl_context.load_cert_chain(ssl_cert, keyfile=ssl_key)
 
-async def rcon_server(stop):
+
     async with websockets.serve(handler, "0.0.0.0", 8765, ssl=ssl_context):
+    #async with websockets.serve(handler, "0.0.0.0", 8765):
         await stop
+
+
+
+parser = argparse.ArgumentParser(description='RCon server arguments')
+parser.add_argument('--nosecure', action='store_true',
+                    help='disabled secure websocket (only use if you know)')
+
+args = parser.parse_args()
 
 loop = asyncio.get_event_loop()
 
@@ -107,4 +121,4 @@ loop = asyncio.get_event_loop()
 stop = loop.create_future()
 loop.add_signal_handler(signal.SIGTERM, stop.set_result, None)
 
-loop.run_until_complete(rcon_server(stop))
+loop.run_until_complete(rcon_server(stop, args))
