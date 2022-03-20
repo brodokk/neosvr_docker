@@ -12,6 +12,8 @@ import argparse
 import functools
 import logging
 
+logging.basicConfig(level=logging.INFO)
+
 def cleanWorldReply(focused_world):
     ansi_escape = re.compile(r'\x1B(?:[@-Z\\-_]|\[[0-?]*[ -/]*[@-~])')
     focused_world = ansi_escape.sub('', focused_world)
@@ -43,13 +45,13 @@ async def consumer(websocket, message, child, access_code):
             logging.info("running command: " + incoming_command)
             child.sendline(incoming_command)
         else:
-            logging.error("error")
+            logging.error("Cant run command")
 
         i = child.expect_exact([">\x1b[37m\x1b[6n"])
         if i == 0:
             reply = cleanReply(child.before)
         else:
-           logging.error("error")
+           logging.error("Cant get reply")
 
         child.sendline()
         i = child.expect_exact([">\x1b[37m\x1b[6n"])
@@ -57,7 +59,7 @@ async def consumer(websocket, message, child, access_code):
             focused_world = cleanWorldReply(child.before)
             await websocket.send(focused_world + "," + reply)
         else:
-            logging.error("error")
+            logging.error("Cant get a world reply")
 
     elif incoming_access_code != access_code:
         logging.error("invalid access code: " + incoming_access_code)
