@@ -32,7 +32,7 @@ async def consumer(websocket, message, child, access_code):
         message = message.split(",")
         incoming_access_code = message[0]
         incoming_command = message[1]
-        logging.info("incoming: ", message)
+        logging.info("incoming: {}".format(message))
     except:
         logging.error("malformed message from websocket")
 
