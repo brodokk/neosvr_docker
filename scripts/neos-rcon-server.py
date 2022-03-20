@@ -74,8 +74,9 @@ async def consumer_handler(websocket, child, access_code):
             await consumer(websocket, message, child, access_code)
 
 async def handler(websocket, path, args):
-    logging.info("docker attach {}".format(args.container_id))
-    child = pexpect.spawnu("docker attach {}".format(args.container_id))
+    container_id = args.container_id[0]
+    logging.info("docker attach {}".format(container_id))
+    child = pexpect.spawnu("docker attach {}".format(container_id))
     child.sendline()
     try:
         i = child.expect_exact([">\x1b[37m\x1b[6n"])
