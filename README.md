@@ -99,13 +99,22 @@ websockets
 pexpect
 ```
 
-You need to set the id of the container line `71`.
+### Usage
 
-And last but not least dont forgot to set the key in the `accesscode.txt` file
-in the `scripts` folder, create the file if needed.
-Can be anything, but keep in mind security.
+```
+usage: neos-rcon-server.py [-h] [--nosecure] [--secret_file SECRET_FILE] container_id
 
-For launching the script you *MUST* be in the script folder.
+RCon server arguments
+
+positional arguments:
+  container_id          neosvr docker container id
+
+options:
+  -h, --help            show this help message and exit
+  --nosecure            disabled secure websocket (only use if you know) (default: False)
+  --secret_file SECRET_FILE
+                        path of the file where the access code is, search by default next to the script (default: accesscode.txt)
+```
 
 # Notes
 

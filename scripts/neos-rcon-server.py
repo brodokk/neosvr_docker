@@ -114,17 +114,27 @@ async def rcon_server(stop, args):
         ssl_context.load_cert_chain(ssl_cert, keyfile=ssl_key)
 
     bound_handler = functools.partial(handler, args=args)
-    #async with websockets.serve(handler, "0.0.0.0", 8765):
     async with websockets.serve(bound_handler, "0.0.0.0", 8765, ssl=ssl_context):
         await stop
 
 
 
-parser = argparse.ArgumentParser(description='RCon server arguments')
-parser.add_argument('--nosecure', action='store_true',
-                    help='disabled secure websocket (only use if you know)')
-parser.add_argument('--secret_file', default='accesscode.text')
-parser.add_argument('container_id', nargs=1)
+parser = argparse.ArgumentParser(
+    description='RCon server arguments',
+    formatter_class=argparse.ArgumentDefaultsHelpFormatter
+)
+parser.add_argument(
+    '--nosecure', action='store_true',
+    help='disabled secure websocket (only use if you know)'
+)
+parser.add_argument(
+    '--secret_file', default='accesscode.txt',
+    help='path of the file where the access code is, search by default next ' \
+        'to the script'
+)
+parser.add_argument(
+    'container_id', nargs=1, help='neosvr docker container id'
+)
 
 args = parser.parse_args()
 
