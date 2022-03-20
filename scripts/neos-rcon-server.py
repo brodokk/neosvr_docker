@@ -9,6 +9,7 @@ import sys
 import pexpect
 import re
 import argparse
+import functools
 
 def cleanWorldReply(focused_world):
     ansi_escape = re.compile(r'\x1B(?:[@-Z\\-_]|\[[0-?]*[ -/]*[@-~])')
@@ -69,8 +70,9 @@ async def consumer_handler(websocket, child, access_code):
         async for message in websocket:
             await consumer(websocket, message, child, access_code)
 
-async def handler(websocket, path):
-    child = pexpect.spawnu("docker attach e8364dae7321")
+async def handler(websocket, path, args):
+    print("docker attach {}".format(args.container_id))
+    child = pexpect.spawnu("docker attach {}".format(args.container_id))
     child.sendline()
     try:
         i = child.expect_exact([">\x1b[37m\x1b[6n"])
@@ -102,9 +104,9 @@ async def rcon_server(stop, args):
         ssl_key = "privkey.pem"
         ssl_context.load_cert_chain(ssl_cert, keyfile=ssl_key)
 
-
-    async with websockets.serve(handler, "0.0.0.0", 8765, ssl=ssl_context):
+    bound_handler = functools.partial(handler, args=args)
     #async with websockets.serve(handler, "0.0.0.0", 8765):
+    async with websockets.serve(bound_handler, "0.0.0.0", 8765, ssl=ssl_context):
         await stop
 
 
@@ -112,6 +114,7 @@ async def rcon_server(stop, args):
 parser = argparse.ArgumentParser(description='RCon server arguments')
 parser.add_argument('--nosecure', action='store_true',
                     help='disabled secure websocket (only use if you know)')
+parser.add_argument('container_id', nargs=1)
 
 args = parser.parse_args()
 
