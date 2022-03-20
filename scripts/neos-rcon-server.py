@@ -79,6 +79,8 @@ async def handler(websocket, path, args):
     except Exception as e:
         if 'No such container' in str(e):
             print('Container not found')
+        elif 'dial unix /var/run/docker.sock: connect: permission denied' in str(e):
+            print('Docker permission denied')
         else:
             print(e)
         sys.exit(1)
