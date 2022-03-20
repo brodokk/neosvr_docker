@@ -89,9 +89,12 @@ async def handler(websocket, path, args):
             logging.error(e)
         sys.exit(1)
 
-    with open("accesscode.txt") as f:
-        access_code = f.read()
-        access_code = access_code.split('\n', 1)[0]
+    try:
+        with open(args.secret_file) as f:
+            access_code = f.read()
+            access_code = access_code.split('\n', 1)[0]
+    except:
+        logging.error(str(e))
     consumer_task = asyncio.ensure_future(consumer_handler(websocket, child, access_code))
     done, pending = await asyncio.wait(
         [consumer_task],
@@ -120,6 +123,7 @@ async def rcon_server(stop, args):
 parser = argparse.ArgumentParser(description='RCon server arguments')
 parser.add_argument('--nosecure', action='store_true',
                     help='disabled secure websocket (only use if you know)')
+parser.add_argument('--secret_file', default='accesscode.text')
 parser.add_argument('container_id', nargs=1)
 
 args = parser.parse_args()
