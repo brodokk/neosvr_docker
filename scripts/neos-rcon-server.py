@@ -10,6 +10,7 @@ import pexpect
 import re
 import argparse
 import functools
+import logging
 
 def cleanWorldReply(focused_world):
     ansi_escape = re.compile(r'\x1B(?:[@-Z\\-_]|\[[0-?]*[ -/]*[@-~])')
@@ -29,26 +30,26 @@ async def consumer(websocket, message, child, access_code):
         message = message.split(",")
         incoming_access_code = message[0]
         incoming_command = message[1]
-        print("incoming: ", message)
+        logging.info("incoming: ", message)
     except:
-        print("malformed message from websocket")
+        logging.error("malformed message from websocket")
 
     if incoming_access_code == access_code:
-        print("authenticated")
+        logging.info("authenticated")
 
         child.sendline()
         i = child.expect_exact([">\x1b[37m\x1b[6n"])
         if i == 0:
-            print("running command: " + incoming_command)
+            logging.info("running command: " + incoming_command)
             child.sendline(incoming_command)
         else:
-            print("error")
+            logging.error("error")
 
         i = child.expect_exact([">\x1b[37m\x1b[6n"])
         if i == 0:
             reply = cleanReply(child.before)
         else:
-           print("error")
+           logging.error("error")
 
         child.sendline()
         i = child.expect_exact([">\x1b[37m\x1b[6n"])
@@ -56,13 +57,13 @@ async def consumer(websocket, message, child, access_code):
             focused_world = cleanWorldReply(child.before)
             await websocket.send(focused_world + "," + reply)
         else:
-            print("error")
+            logging.error("error")
 
     elif incoming_access_code != access_code:
-        print("invalid access code: " + incoming_access_code)
+        logging.error("invalid access code: " + incoming_access_code)
         await websocket.send("Websocket: Invalid access code")
     else:
-        print("error parsing incoming message")
+        logging.error("error parsing incoming message")
         await websocket.send("Websocket: Server error. Malformed command sent?")
 
 async def consumer_handler(websocket, child, access_code):
@@ -71,18 +72,18 @@ async def consumer_handler(websocket, child, access_code):
             await consumer(websocket, message, child, access_code)
 
 async def handler(websocket, path, args):
-    print("docker attach {}".format(args.container_id))
+    logging.info("docker attach {}".format(args.container_id))
     child = pexpect.spawnu("docker attach {}".format(args.container_id))
     child.sendline()
     try:
         i = child.expect_exact([">\x1b[37m\x1b[6n"])
     except Exception as e:
         if 'No such container' in str(e):
-            print('Container not found')
+            logging.error('Container not found')
         elif 'dial unix /var/run/docker.sock: connect: permission denied' in str(e):
-            print('Docker permission denied')
+            logging.error('Docker permission denied')
         else:
-            print(e)
+            logging.error(e)
         sys.exit(1)
 
     with open("accesscode.txt") as f:
