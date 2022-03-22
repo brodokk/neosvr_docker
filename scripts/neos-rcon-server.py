@@ -12,6 +12,11 @@ import argparse
 import functools
 import logging
 
+import threading, queue
+
+cmd_q = queue.Queue()
+resp_q = queue.Queue()
+
 logging.basicConfig(level=logging.INFO)
 
 def cleanWorldReply(focused_world):
@@ -22,58 +27,13 @@ def cleanWorldReply(focused_world):
 def cleanReply(reply):
     ansi_escape = re.compile(r'\x1B(?:[@-Z\\-_]|\[[0-?]*[ -/]*[@-~])')
     ansi_escape = ansi_escape.sub('', reply)
-    reply = ansi_escape.split("\n",1)[1]
+    reply = ansi_escape.split("\n",1)
+    reply = reply[1]
     reply = reply.replace('\t', ' ')
     reply = reply[:reply.rfind('\n')]
     return reply
 
-async def consumer(websocket, message, child, access_code):
-    try:
-        message = message.split(",")
-        incoming_access_code = message[0]
-        incoming_command = message[1]
-        logging.info("incoming: {}".format(message))
-    except:
-        logging.error("malformed message from websocket")
-
-    if incoming_access_code == access_code:
-        logging.info("authenticated")
-
-        child.sendline()
-        i = child.expect_exact([">\x1b[37m\x1b[6n"])
-        if i == 0:
-            logging.info("running command: " + incoming_command)
-            child.sendline(incoming_command)
-        else:
-            logging.error("Cant run command")
-
-        i = child.expect_exact([">\x1b[37m\x1b[6n"])
-        if i == 0:
-            reply = cleanReply(child.before)
-        else:
-           logging.error("Cant get reply")
-
-        child.sendline()
-        i = child.expect_exact([">\x1b[37m\x1b[6n"])
-        if i == 0:
-            focused_world = cleanWorldReply(child.before)
-            await websocket.send(focused_world + "," + reply)
-        else:
-            logging.error("Cant get a world reply")
-
-    elif incoming_access_code != access_code:
-        logging.error("invalid access code: " + incoming_access_code)
-        await websocket.send("Websocket: Invalid access code")
-    else:
-        logging.error("error parsing incoming message")
-        await websocket.send("Websocket: Server error. Malformed command sent?")
-
-async def consumer_handler(websocket, child, access_code):
-    while True:
-        async for message in websocket:
-            await consumer(websocket, message, child, access_code)
-
-async def handler(websocket, path, args):
+def neosvr_worker(args):
     container_id = args.container_id[0]
     logging.info("docker attach {}".format(container_id))
     child = pexpect.spawnu("docker attach {}".format(container_id))
@@ -89,15 +49,70 @@ async def handler(websocket, path, args):
             logging.error(e)
         sys.exit(1)
 
+    while True:
+        cmd = cmd_q.get()
+        child.sendline()
+        i = child.expect_exact([">\x1b[37m\x1b[6n"])
+        if i == 0:
+            logging.info("running command: " + cmd)
+            child.sendline(cmd)
+        else:
+            logging.error("Cant run command")
+
+        i = child.expect_exact([">\x1b[37m\x1b[6n"])
+        if i == 0:
+            reply = cleanReply(child.before)
+        else:
+           logging.error("Cant get reply")
+
+        child.sendline()
+        i = child.expect_exact([">\x1b[37m\x1b[6n"])
+        if i == 0:
+            focused_world = cleanWorldReply(child.before)
+            resp = focused_world + "," + reply
+            resp_q.put(resp)
+        else:
+            logging.error("Cant get a world reply")
+        cmd_q.task_done()
+
+async def websocket_consumer(websocket, message, access_code):
+    try:
+        message = message.split(",")
+        incoming_access_code = message[0]
+        incoming_command = message[1]
+        logging.info("incoming: {}".format(message))
+    except:
+        logging.error("malformed message from websocket")
+
+    if incoming_access_code == access_code:
+        logging.info("authenticated")
+
+        cmd_q.put(incoming_command)
+        resp = resp_q.get()
+        await websocket.send(resp)
+
+    elif incoming_access_code != access_code:
+        logging.error("invalid access code: " + incoming_access_code)
+        await websocket.send("Websocket: Invalid access code")
+    else:
+        logging.error("error parsing incoming message")
+        await websocket.send("Websocket: Server error. Malformed command sent?")
+
+async def websocket_consumer_handler(websocket, access_code):
+    while True:
+        async for message in websocket:
+            await websocket_consumer(websocket, message,access_code)
+
+async def websocket_handler(websocket, path, args):
     try:
         with open(args.secret_file) as f:
             access_code = f.read()
             access_code = access_code.split('\n', 1)[0]
     except:
         logging.error(str(e))
-    consumer_task = asyncio.ensure_future(consumer_handler(websocket, child, access_code))
+    websocket_consumer_task = asyncio.ensure_future(websocket_consumer_handler(websocket, access_code))
     done, pending = await asyncio.wait(
-        [consumer_task],
+        [websocket_consumer_task],
         return_when=asyncio.ALL_COMPLETED,
     )
 
@@ -113,7 +128,9 @@ async def rcon_server(stop, args):
         ssl_key = "privkey.pem"
         ssl_context.load_cert_chain(ssl_cert, keyfile=ssl_key)
 
-    bound_handler = functools.partial(handler, args=args)
+    cmd_q.join()
+    resp_q.join()
+    bound_handler = functools.partial(websocket_handler, args=args)
     async with websockets.serve(bound_handler, "0.0.0.0", 8765, ssl=ssl_context):
         await stop
 
@@ -137,6 +154,9 @@ parser.add_argument(
 )
 
 args = parser.parse_args()
+
+# Turn-on the worker thread.
+threading.Thread(target=worker, args=(args,), daemon=True).start()
 
 loop = asyncio.get_event_loop()
 
