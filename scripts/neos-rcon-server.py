@@ -184,7 +184,7 @@ parser.add_argument(
 args = parser.parse_args()
 
 # Turn-on the worker thread.
-threading.Thread(target=worker, args=(args,), daemon=True).start()
+threading.Thread(target=neosvr_worker, args=(args,), daemon=True).start()
 
 loop = asyncio.get_event_loop()
 
