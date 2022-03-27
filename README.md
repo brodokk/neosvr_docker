@@ -128,6 +128,9 @@ options:
                         path of the file where the access code is, search by default next to the script (default: accesscode.txt)
 ```
 
+For sending a commands to the server just open a websocket connection and
+send the following message: `<secret>, <message>`.
+
 # Notes
 
 If you have frequent GC crashes you need to set `vm.max_map_count=262144` in
