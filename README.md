@@ -84,6 +84,18 @@ Thanks to GrayBoltWolf for his script, you can check the original one here: http
 
 NeosVR facet/panel can be found in his public folder: neosrec:///U-GrayBoltWolf/R-6ab7ea3e-b7a9-4ab7-9490-955094c34021
 
+### New Features
+
+This server, compared to GrayBoldWolf's version, add the following
+amelioration:
+
+- Better handling of docker related commands
+- The logs now return the command exectued, with the curent ISO server date and
+  current session where the command was run (especially usefull for session
+  related commands)
+- Simple multi client connection with the same shared token. All commands are
+  executed in queue. Not really well tested for now.
+
 In the futur i will make this script with a better integration with the current docker stack. Just a little todolist formyself:
 
 - Automatic detection of the headless

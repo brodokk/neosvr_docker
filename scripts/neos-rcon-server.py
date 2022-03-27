@@ -33,46 +33,74 @@ def cleanReply(reply):
     reply = reply[:reply.rfind('\n')]
     return reply
 
+from time import sleep
+
 def neosvr_worker(args):
     container_id = args.container_id[0]
-    logging.info("docker attach {}".format(container_id))
-    child = pexpect.spawnu("docker attach {}".format(container_id))
-    child.sendline()
-    try:
-        i = child.expect_exact([">\x1b[37m\x1b[6n"])
-    except Exception as e:
-        if 'No such container' in str(e):
-            logging.error('Container not found')
-        elif 'dial unix /var/run/docker.sock: connect: permission denied' in str(e):
-            logging.error('Docker permission denied')
-        else:
-            logging.error(e)
-        sys.exit(1)
-
+    starting = True
     while True:
+        if starting:
+            try:
+                logging.info("Trying attaching to docker {}...".format(container_id))
+                child = pexpect.spawnu("docker attach {}".format(container_id))
+                child.sendline()
+                i = child.expect_exact([">\x1b[37m\x1b[6n"])
+                starting = False
+            except Exception as e:
+                if 'No such container' in str(e):
+                    logging.error('Container not found')
+                    sleep(1)
+                    continue
+                elif 'dial unix /var/run/docker.sock: connect: permission denied' in str(e):
+                    logging.error('Docker permission denied')
+                elif "buffer (last 100 chars): ''" in str(e):
+                    sleep(1)
+                    continue
+                elif 'Timeout exceeded' in str(e):
+                    sleep(1)
+                    continue
+                else:
+                    logging.error(e)
+                    sys.exit(1)
+            logging.info('Attached to docker {}'.format(container_id))
+
+        logging.info('waiting for command now')
+
         cmd = cmd_q.get()
+        logging.info(cmd)
+        logging.debug('oiki')
         child.sendline()
-        i = child.expect_exact([">\x1b[37m\x1b[6n"])
-        if i == 0:
-            logging.info("running command: " + cmd)
-            child.sendline(cmd)
-        else:
-            logging.error("Cant run command")
+        date = datetime.datetime.now().isoformat()
+        focused_world = ''
+        try:
+            i = child.expect_exact([">\x1b[37m\x1b[6n"])
+            if i == 0:
+                logging.info("running command: " + cmd)
+                child.sendline(cmd)
+                if cmd == 'shutdown':
+                    starting = True
+            else:
+                logging.error("Cant run command")
 
-        i = child.expect_exact([">\x1b[37m\x1b[6n"])
-        if i == 0:
-            reply = cleanReply(child.before)
-        else:
-           logging.error("Cant get reply")
+            i = child.expect_exact([">\x1b[37m\x1b[6n"])
+            if i == 0:
+                reply = cleanReply(child.before)
+            else:
+                logging.error("Cant get reply")
 
-        child.sendline()
-        i = child.expect_exact([">\x1b[37m\x1b[6n"])
-        if i == 0:
-            focused_world = cleanWorldReply(child.before)
-            resp = focused_world + "," + reply
+            child.sendline()
+            i = child.expect_exact([">\x1b[37m\x1b[6n"])
+            if i == 0:
+                focused_world = cleanWorldReply(child.before)
+                resp = focused_world + "," + date + " - " + focused_world + " > " + cmd + "\n"  + reply
+                resp_q.put(resp)
+            else:
+                logging.error("Cant get a world reply")
+        except pexpect.exceptions.EOF:
+            starting = True
+            resp = focused_world + "," + date + " - " + focused_world + " > " + cmd + "\nSomething goes wrong, try again"
             resp_q.put(resp)
-        else:
-            logging.error("Cant get a world reply")
+            continue
         cmd_q.task_done()
 
 async def websocket_consumer(websocket, message, access_code):
